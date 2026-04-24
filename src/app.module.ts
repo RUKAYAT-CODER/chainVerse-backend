@@ -1,6 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -38,11 +38,12 @@ import { CourseAnalyticsModule } from './course-analytics/course-analytics.modul
         limit: 10,
       },
     ]),
-    // MongoDB connection
+    // MongoDB connection — reads mongoUri from app.config.ts which maps MONGO_URI
     MongooseModule.forRootAsync({
-      useFactory: () => ({
-        uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/chainverse',
+      useFactory: (config: ConfigService) => ({
+        uri: config.get<string>('mongoUri'),
       }),
+      inject: [ConfigService],
     }),
     WorkerModule,
     MetricsModule,

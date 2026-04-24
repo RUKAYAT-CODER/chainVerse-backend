@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  NotImplementedException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -112,16 +113,22 @@ export class StudentEnrollmentService {
           .findOne({ studentId, courseId: item.courseId })
           .exec();
         if (existing) {
-          // If already enrolled, just skip and remove from cart
           await this.cartItemModel.findByIdAndDelete(item._id).exec();
           continue;
+        }
+
+        // Paid courses require a real payment step — not yet implemented
+        if (course.price > 0) {
+          throw new NotImplementedException(
+            'Payment processing is not yet implemented. Paid course enrollment is unavailable.',
+          );
         }
 
         const enrollment = new this.enrollmentModel({
           studentId,
           courseId: item.courseId,
-          type: course.price > 0 ? 'paid' : 'free',
-          amountPaid: course.price,
+          type: 'free',
+          amountPaid: 0,
           status: 'completed',
           paymentMethod,
         });

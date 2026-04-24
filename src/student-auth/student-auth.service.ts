@@ -327,7 +327,7 @@ export class StudentAuthService {
     await student.save();
 
     this.eventEmitter.emit(
-      DomainEvents.STUDENT_REGISTERED,
+      DomainEvents.VERIFICATION_EMAIL_RESENT,
       Object.assign(new StudentRegisteredPayload(), {
         studentId: student.id,
         email: student.email,
