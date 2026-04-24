@@ -166,7 +166,6 @@ export class StudentAuthService {
       throw new ConflictException('Email already registered');
     }
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
     const passwordHash = await this.hashPassword(dto.password);
 
     const student = await new this.studentModel({
@@ -174,7 +173,6 @@ export class StudentAuthService {
       lastName: dto.lastName,
       email: dto.email,
       passwordHash,
-      verificationToken,
     }).save();
 
     const verificationToken = this.createVerificationToken(
