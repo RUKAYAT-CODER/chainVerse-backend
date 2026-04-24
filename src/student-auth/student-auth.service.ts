@@ -459,6 +459,9 @@ export class StudentAuthService {
       throw new BadRequestException('Invalid or expired reset token');
     }
 
+    const student = await this.studentModel.findById(resetTokenRecord.studentId).exec();
+    if (!student) throw new NotFoundException('Student not found');
+
     const passwordHash = await this.hashPassword(dto.newPassword);
     student.passwordHash = passwordHash;
     student.resetToken = null;
