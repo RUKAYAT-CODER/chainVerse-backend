@@ -39,6 +39,10 @@ export const envValidationSchema = Joi.object({
   // ── Email ─────────────────────────────────────────────────────────────────
   EMAIL_USER: Joi.string().allow('').optional(),
   EMAIL_PASS: Joi.string().allow('').optional(),
+  EMAIL_FROM: Joi.string().allow('').optional(),
+  SMTP_HOST: Joi.string().allow('').optional(),
+  SMTP_PORT: Joi.number().integer().min(1).max(65535).default(587),
+  SMTP_SECURE: Joi.boolean().default(false),
 
   // ── Application base URL ──────────────────────────────────────────────────
   BASE_URL: Joi.string().allow('').default('http://localhost:3000'),

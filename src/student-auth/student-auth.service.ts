@@ -11,6 +11,7 @@ import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EmailService } from '../email/email.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { LoginStudentDto } from './dto/login-student.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
@@ -43,6 +44,7 @@ export class StudentAuthService {
     private readonly passwordResetTokenModel: Model<PasswordResetTokenDocument>,
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   private get jwtSecret(): string {
@@ -418,9 +420,9 @@ export class StudentAuthService {
     student.resetTokenExpiry = expiresAt.getTime();
     await student.save();
 
-    // In production, send email with reset link containing the token
-    // For now, log it (in real implementation, this would be sent via email service)
-    console.log(`[Password Reset] Token for ${student.email}: ${resetToken}`);
+    // Send password reset email (token must only travel to user's inbox)
+    const baseUrl = this.configService.get<string>('baseUrl') ?? 'http://localhost:3000';
+    await this.emailService.sendPasswordReset(student.email, resetToken, baseUrl);
 
     // Do NOT return the token in the response (security)
     return {

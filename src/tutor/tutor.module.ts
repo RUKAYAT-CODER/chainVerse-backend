@@ -7,6 +7,7 @@ import {
   PasswordResetToken,
   PasswordResetTokenSchema,
 } from './schemas/password-reset-token.schema';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import {
       { name: Tutor.name, schema: TutorSchema },
       { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
     ]),
+    EmailModule,
   ],
   controllers: [TutorController],
   providers: [TutorService],

@@ -10,6 +10,12 @@ export interface AppConfig {
   email: {
     user: string | undefined;
     pass: string | undefined;
+    from: string | undefined;
+  };
+  smtp: {
+    host: string | undefined;
+    port: number;
+    secure: boolean;
   };
   google: {
     clientId: string | undefined;
@@ -48,6 +54,12 @@ export default (): AppConfig => ({
   email: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
+    from: process.env.EMAIL_FROM,
+  },
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT ?? '587', 10),
+    secure: process.env.SMTP_SECURE === 'true',
   },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID,

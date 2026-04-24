@@ -10,6 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
 import { EventEmitter2 } from '@nestjs/event-emitter';
+import { EmailService } from '../email/email.service';
 import { CreateTutorDto } from './dto/create-tutor.dto';
 import { LoginTutorDto } from './dto/login-tutor.dto';
 import { VerifyTutorEmailDto } from './dto/verify-tutor-email.dto';
@@ -36,6 +37,7 @@ export class TutorService {
     private readonly passwordResetTokenModel: Model<PasswordResetTokenDocument>,
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   private get jwtSecret(): string {
@@ -55,7 +57,10 @@ export class TutorService {
     const verify = crypto
       .pbkdf2Sync(password, salt, 10000, 64, 'sha512')
       .toString('hex');
-    return hash === verify;
+    return crypto.timingSafeEqual(
+      Buffer.from(hash, 'hex'),
+      Buffer.from(verify, 'hex'),
+    );
   }
 
   private createJwt(
@@ -304,8 +309,9 @@ export class TutorService {
     tutor.resetTokenExpiry = expiresAt.getTime();
     await tutor.save();
 
-    // In production, send email with reset link containing the token
-    console.log(`[Password Reset] Token for ${tutor.email}: ${resetToken}`);
+    // Send password reset email (token must only travel to user's inbox)
+    const baseUrl = this.configService.get<string>('baseUrl') ?? 'http://localhost:3000';
+    await this.emailService.sendPasswordReset(tutor.email, resetToken, baseUrl);
 
     return { message: 'If the email exists, a reset link has been sent' };
   }

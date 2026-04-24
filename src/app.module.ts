@@ -12,6 +12,7 @@ import { WorkerModule } from './worker/worker.module';
 import { RequestIdMiddleware } from './common/middleware/request-id.middleware';
 import { MetricsModule } from './metrics/metrics.module';
 import { TracingModule } from './tracing/tracing.module';
+import { EmailModule } from './email/email.module';
 
 // Course modules
 import { AdminCourseModule } from './admin-course/admin-course.module';
@@ -48,6 +49,7 @@ import { CourseAnalyticsModule } from './course-analytics/course-analytics.modul
     WorkerModule,
     MetricsModule,
     TracingModule,
+    EmailModule,
     // Tutor modules
     TutorModule,
     // Course modules
