@@ -29,6 +29,8 @@ import {
 const ACCESS_TOKEN_EXPIRY = 3600;
 const REFRESH_TOKEN_EXPIRY = 604800;
 const BCRYPT_SALT_ROUNDS = 10;
+const VERIFICATION_TOKEN_EXPIRY = 86400; // 24 hours
+const RESET_TOKEN_EXPIRY = 900;          // 15 minutes
 
 @Injectable()
 export class StudentAuthService {
