@@ -26,6 +26,10 @@ import {
   RefreshToken,
   RefreshTokenDocument,
 } from './schemas/refresh-token.schema';
+import {
+  PasswordResetToken,
+  PasswordResetTokenDocument,
+} from './schemas/password-reset-token.schema';
 
 const ACCESS_TOKEN_EXPIRY = 3600;
 const REFRESH_TOKEN_EXPIRY = 604800;
