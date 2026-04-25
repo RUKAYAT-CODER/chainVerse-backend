@@ -26,6 +26,10 @@ import {
   RefreshToken,
   RefreshTokenDocument,
 } from './schemas/refresh-token.schema';
+import {
+  PasswordResetToken,
+  PasswordResetTokenDocument,
+} from './schemas/password-reset-token.schema';
 
 const ACCESS_TOKEN_EXPIRY = 3600;
 const REFRESH_TOKEN_EXPIRY = 604800;
@@ -501,7 +505,7 @@ export class StudentAuthService {
     // Verify JWT signature and expiry first to extract the token family claim
     let payload: Record<string, unknown>;
     try {
-      this.verifyJwt(dto.refreshToken);
+      payload = this.verifyJwt(dto.refreshToken);
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
