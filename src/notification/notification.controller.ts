@@ -34,7 +34,7 @@ export class NotificationController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.MODERATOR)
+  @Roles(Role.ADMIN)
   findAll(@Query('page') page?: string, @Query('limit') limit?: string) {
     return this.service.findAll(
       page ? parseInt(page, 10) : 1,

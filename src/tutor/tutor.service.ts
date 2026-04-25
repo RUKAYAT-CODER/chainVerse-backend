@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
+import * as bcrypt from 'bcryptjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { EmailService } from '../email/email.service';
 import { CreateTutorDto } from './dto/create-tutor.dto';
@@ -27,6 +28,7 @@ const ACCESS_TOKEN_EXPIRY = 3600;
 const REFRESH_TOKEN_EXPIRY = 604800;
 const VERIFICATION_TOKEN_EXPIRY = 86400; // 24 hours
 const RESET_TOKEN_EXPIRY = 900; // 15 minutes in seconds
+const BCRYPT_SALT_ROUNDS = 10;
 
 @Injectable()
 export class TutorService {
@@ -44,23 +46,15 @@ export class TutorService {
     return this.configService.get<string>('jwtSecret') ?? '';
   }
 
-  private hashPassword(password: string): string {
-    const salt = crypto.randomBytes(16).toString('hex');
-    const hash = crypto
-      .pbkdf2Sync(password, salt, 10000, 64, 'sha512')
-      .toString('hex');
-    return `${salt}:${hash}`;
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
   }
 
-  private verifyPassword(password: string, stored: string): boolean {
-    const [salt, hash] = stored.split(':');
-    const verify = crypto
-      .pbkdf2Sync(password, salt, 10000, 64, 'sha512')
-      .toString('hex');
-    return crypto.timingSafeEqual(
-      Buffer.from(hash, 'hex'),
-      Buffer.from(verify, 'hex'),
-    );
+  private async verifyPassword(
+    password: string,
+    storedHash: string,
+  ): Promise<boolean> {
+    return bcrypt.compare(password, storedHash);
   }
 
   private createJwt(
@@ -170,7 +164,7 @@ export class TutorService {
       firstName: dto.firstName,
       lastName: dto.lastName,
       email: dto.email,
-      passwordHash: this.hashPassword(dto.password),
+      passwordHash: await this.hashPassword(dto.password),
     }).save();
 
     const verificationToken = this.createVerificationToken(
@@ -240,7 +234,7 @@ export class TutorService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    if (!this.verifyPassword(dto.password, tutor.passwordHash)) {
+    if (!(await this.verifyPassword(dto.password, tutor.passwordHash))) {
       throw new UnauthorizedException('Invalid email or password');
     }
 
@@ -310,7 +304,8 @@ export class TutorService {
     await tutor.save();
 
     // Send password reset email (token must only travel to user's inbox)
-    const baseUrl = this.configService.get<string>('baseUrl') ?? 'http://localhost:3000';
+    const baseUrl =
+      this.configService.get<string>('baseUrl') ?? 'http://localhost:3000';
     await this.emailService.sendPasswordReset(tutor.email, resetToken, baseUrl);
 
     return { message: 'If the email exists, a reset link has been sent' };
@@ -355,7 +350,7 @@ export class TutorService {
     }
 
     // Update password securely
-    tutor.passwordHash = this.hashPassword(dto.newPassword);
+    tutor.passwordHash = await this.hashPassword(dto.newPassword);
     tutor.resetToken = null;
     tutor.resetTokenExpiry = null;
     await tutor.save();

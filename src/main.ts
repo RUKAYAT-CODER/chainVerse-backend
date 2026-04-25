@@ -14,6 +14,13 @@ async function bootstrap() {
   // Security headers (X-Content-Type-Options, X-Frame-Options, HSTS, etc.)
   app.use(helmet());
 
+  // Configure CORS to restrict allowed origins
+  app.enableCors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? 'http://localhost:3000',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  });
+
   // Validate and strip all incoming request bodies against DTO definitions
   app.useGlobalPipes(
     new ValidationPipe({
