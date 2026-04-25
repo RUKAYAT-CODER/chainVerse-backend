@@ -23,33 +23,33 @@ export class TutorJwtAuthController {
   constructor(private readonly service: TutorJwtAuthService) {}
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.service.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.service.findOne(id);
   }
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.MODERATOR, Role.TUTOR)
-  create(@Body() payload: CreateTutorJwtAuthDto) {
+  async create(@Body() payload: CreateTutorJwtAuthDto) {
     return this.service.create(payload);
   }
 
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.MODERATOR, Role.TUTOR)
-  update(@Param('id') id: string, @Body() payload: UpdateTutorJwtAuthDto) {
+  async update(@Param('id') id: string, @Body() payload: UpdateTutorJwtAuthDto) {
     return this.service.update(id, payload);
   }
 
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.MODERATOR)
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.service.remove(id);
   }
 }
