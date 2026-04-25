@@ -505,7 +505,7 @@ export class StudentAuthService {
     // Verify JWT signature and expiry first to extract the token family claim
     let payload: Record<string, unknown>;
     try {
-      this.verifyJwt(dto.refreshToken);
+      payload = this.verifyJwt(dto.refreshToken);
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
