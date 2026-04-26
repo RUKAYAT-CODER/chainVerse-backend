@@ -25,6 +25,7 @@ import { StudentSavedCoursesModule } from './student-saved-courses/student-saved
 import { StudentCartModule } from './student-cart/student-cart.module';
 import { StudentEnrollmentModule } from './student-enrollment/student-enrollment.module';
 import { CourseAnalyticsModule } from './course-analytics/course-analytics.module';
+import { GamificationPointsModule } from './gamification-points/gamification-points.module';
 
 @Module({
   imports: [
@@ -74,6 +75,8 @@ import { CourseAnalyticsModule } from './course-analytics/course-analytics.modul
     StudentEnrollmentModule,
     // Analytics
     CourseAnalyticsModule,
+    // Gamification
+    GamificationPointsModule,
   ],
   controllers: [AppController],
   providers: [
