@@ -6,6 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as crypto from 'crypto';
@@ -40,11 +41,8 @@ export class TutorService {
     private readonly eventEmitter: EventEmitter2,
     private readonly configService: ConfigService,
     private readonly emailService: EmailService,
+    private readonly jwtService: JwtService,
   ) {}
-
-  private get jwtSecret(): string {
-    return this.configService.get<string>('jwtSecret') ?? '';
-  }
 
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
@@ -57,63 +55,36 @@ export class TutorService {
     return bcrypt.compare(password, storedHash);
   }
 
-  private createJwt(
-    payload: Record<string, unknown>,
-    expiresIn: number,
-  ): string {
-    const header = Buffer.from(
-      JSON.stringify({ alg: 'HS256', typ: 'JWT' }),
-    ).toString('base64url');
-    const now = Math.floor(Date.now() / 1000);
-    const body = Buffer.from(
-      JSON.stringify({ ...payload, iat: now, exp: now + expiresIn }),
-    ).toString('base64url');
-    const sig = crypto
-      .createHmac('sha256', this.jwtSecret)
-      .update(`${header}.${body}`)
-      .digest('base64url');
-    return `${header}.${body}.${sig}`;
-  }
-
-  verifyJwt(token: string): Record<string, unknown> {
-    const parts = token.split('.');
-    if (parts.length !== 3) throw new Error('Malformed token');
-    const [header, body, sig] = parts;
-    const expected = crypto
-      .createHmac('sha256', this.jwtSecret)
-      .update(`${header}.${body}`)
-      .digest('base64url');
-    if (sig !== expected) throw new Error('Invalid token signature');
-    const decoded = JSON.parse(
-      Buffer.from(body, 'base64url').toString(),
-    ) as Record<string, unknown>;
-    if ((decoded.exp as number) < Math.floor(Date.now() / 1000))
-      throw new Error('Token expired');
-    return decoded;
-  }
-
   private createVerificationToken(tutorId: string, email: string): string {
-    return this.createJwt(
+    return this.jwtService.sign(
       { sub: tutorId, email, type: 'email_verification' },
-      VERIFICATION_TOKEN_EXPIRY,
+      { expiresIn: VERIFICATION_TOKEN_EXPIRY },
     );
   }
 
   private async generateTokenPair(tutor: TutorDocument) {
-    const family = crypto.randomUUID();
-    const accessToken = this.createJwt(
+    const accessToken = this.jwtService.sign(
       { sub: tutor.id, email: tutor.email, role: tutor.role },
-      ACCESS_TOKEN_EXPIRY,
+      { expiresIn: ACCESS_TOKEN_EXPIRY },
     );
-    const refreshToken = this.createJwt(
+    const refreshToken = this.jwtService.sign(
       {
         sub: tutor.id,
         type: 'refresh',
         jti: crypto.randomBytes(16).toString('hex'),
       },
-      REFRESH_TOKEN_EXPIRY,
+      { expiresIn: REFRESH_TOKEN_EXPIRY },
     );
     return { accessToken, refreshToken, expiresIn: ACCESS_TOKEN_EXPIRY };
+  }
+
+  verifyJwt(token: string): Record<string, unknown> {
+    try {
+      return this.jwtService.verify<Record<string, unknown>>(token);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Invalid token';
+      throw new Error(message);
+    }
   }
 
   private sanitizeTutor(tutor: TutorDocument) {

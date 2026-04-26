@@ -1,6 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -39,6 +40,16 @@ import { CourseAnalyticsModule } from './course-analytics/course-analytics.modul
         limit: 10,
       },
     ]),
+    // Global JWT module — makes JwtService available to all guards/services
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('jwtSecret'),
+        signOptions: { algorithm: 'HS256' },
+      }),
+      inject: [ConfigService],
+    }),
     // MongoDB connection — reads mongoUri from app.config.ts which maps MONGO_URI
     MongooseModule.forRootAsync({
       useFactory: (config: ConfigService) => ({

@@ -7,36 +7,32 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
-import { AdminCourseService } from '../admin-course/admin-course.service';
+import { TutorCourseService } from './tutor-course.service';
 import { CreateCourseDto } from '../admin-course/dto/create-course.dto';
 import { UpdateCourseDto } from '../admin-course/dto/update-course.dto';
-import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
 
 @ApiBearerAuth('access-token')
 @ApiTags('Tutor Courses')
 @Controller('tutor/courses')
 @UseGuards(JwtAuthGuard)
 export class TutorCourseController {
-  constructor(private readonly courseService: AdminCourseService) {}
+  constructor(private readonly tutorCourseService: TutorCourseService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all courses for the authenticated tutor' })
   findAll(@CurrentUser('sub') tutorId: string) {
-    return this.courseService.findByTutor(tutorId);
+    return this.tutorCourseService.findAll(tutorId);
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific course by ID (must be owned by tutor)' })
   findOne(@Param('id') id: string, @CurrentUser('sub') tutorId: string) {
-    return this.courseService.findOne(id).then((course) => {
-      if (course.tutorId !== tutorId) {
-        throw new Error('Unauthorized');
-      }
-      return course;
-    });
+    return this.tutorCourseService.findOne(id, tutorId);
   }
 
   @Post()
@@ -47,7 +43,7 @@ export class TutorCourseController {
     @CurrentUser('email') tutorEmail: string,
     @CurrentUser('name') tutorName: string,
   ) {
-    return this.courseService.create(dto, tutorId, tutorEmail, tutorName);
+    return this.tutorCourseService.create(dto, tutorId, tutorEmail, tutorName);
   }
 
   @Patch(':id')
@@ -57,7 +53,7 @@ export class TutorCourseController {
     @Body() dto: UpdateCourseDto,
     @CurrentUser('sub') tutorId: string,
   ) {
-    return this.courseService.update(id, dto, tutorId, false);
+    return this.tutorCourseService.update(id, dto, tutorId);
   }
 
   @Post(':id/submit-review')
@@ -66,25 +62,19 @@ export class TutorCourseController {
     @Param('id') id: string,
     @CurrentUser('sub') tutorId: string,
   ) {
-    return this.courseService.submitForReview(id, tutorId);
+    return this.tutorCourseService.submitForReview(id, tutorId);
   }
 
   @Patch(':id/publish')
   @ApiOperation({ summary: 'Publish an approved course' })
-  publish(
-    @Param('id') id: string,
-    @CurrentUser('sub') tutorId: string,
-  ) {
-    return this.courseService.publish(id, tutorId, false);
+  publish(@Param('id') id: string, @CurrentUser('sub') tutorId: string) {
+    return this.tutorCourseService.publish(id, tutorId);
   }
 
   @Patch(':id/unpublish')
   @ApiOperation({ summary: 'Unpublish a published course' })
-  unpublish(
-    @Param('id') id: string,
-    @CurrentUser('sub') tutorId: string,
-  ) {
-    return this.courseService.unpublish(id, tutorId, false);
+  unpublish(@Param('id') id: string, @CurrentUser('sub') tutorId: string) {
+    return this.tutorCourseService.unpublish(id, tutorId);
   }
 
   @Delete(':id')
@@ -94,20 +84,12 @@ export class TutorCourseController {
     @CurrentUser('sub') tutorId: string,
     @Query('reason') reason?: string,
   ) {
-    return this.courseService.delete(id, tutorId, false, reason);
+    return this.tutorCourseService.delete(id, tutorId, reason);
   }
 
   @Get(':id/enrollments')
   @ApiOperation({ summary: 'Get enrollments for a course' })
-  getEnrollments(
-    @Param('id') id: string,
-    @CurrentUser('sub') tutorId: string,
-  ) {
-    return this.courseService.findOne(id).then((course) => {
-      if (course.tutorId !== tutorId) {
-        throw new Error('Unauthorized');
-      }
-      return this.courseService.getEnrollments(id);
-    });
+  getEnrollments(@Param('id') id: string, @CurrentUser('sub') tutorId: string) {
+    return this.tutorCourseService.getEnrollments(id, tutorId);
   }
 }
