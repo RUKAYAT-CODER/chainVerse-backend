@@ -25,6 +25,10 @@ import { StudentSavedCoursesModule } from './student-saved-courses/student-saved
 import { StudentCartModule } from './student-cart/student-cart.module';
 import { StudentEnrollmentModule } from './student-enrollment/student-enrollment.module';
 import { CourseAnalyticsModule } from './course-analytics/course-analytics.module';
+import { GamificationPointsModule } from './gamification-points/gamification-points.module';
+import { FaqManagementModule } from './faq-management/faq-management.module';
+import { GoogleAuthModule } from './google-auth/google-auth.module';
+import { PointsModule } from './points/points.module';
 
 @Module({
   imports: [
@@ -74,6 +78,14 @@ import { CourseAnalyticsModule } from './course-analytics/course-analytics.modul
     StudentEnrollmentModule,
     // Analytics
     CourseAnalyticsModule,
+    // Gamification
+    GamificationPointsModule,
+    // FAQ
+    FaqManagementModule,
+    // Google Auth
+    GoogleAuthModule,
+    // Points
+    PointsModule,
   ],
   controllers: [AppController],
   providers: [
