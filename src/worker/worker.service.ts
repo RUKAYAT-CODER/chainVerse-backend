@@ -17,7 +17,6 @@ export class WorkerService {
       filename: file.filename,
       mimeType: file.mimetype,
       size: file.size,
-      path: file.path,
       title: payload.title ?? null,
       description: payload.description ?? null,
       tags,

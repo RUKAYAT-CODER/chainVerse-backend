@@ -34,3 +34,8 @@ export const makeStudentToken = (id = 'seed-student-id', email = 'student@test.l
 
 export const makeExpiredToken = (id = 'seed-admin-id', email = 'admin@test.local') =>
   makeToken({ sub: id, email, role: 'admin' }, -1);
+
+/** @deprecated Use makeToken / makeAdminToken etc. instead. */
+export function generateToken(role: string): string {
+  return makeToken({ sub: 'test-user-id', role });
+}
