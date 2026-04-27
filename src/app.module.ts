@@ -29,6 +29,10 @@ import { GamificationPointsModule } from './gamification-points/gamification-poi
 import { FaqManagementModule } from './faq-management/faq-management.module';
 import { GoogleAuthModule } from './google-auth/google-auth.module';
 import { PointsModule } from './points/points.module';
+import { HealthModule } from './health/health.module';
+import { SubscriptionPlanModule } from './subscription-plan/subscription-plan.module';
+import { OrganizationModule } from './organization/organization.module';
+import { OrganizationMemberModule } from './organization-member/organization-member.module';
 
 @Module({
   imports: [
@@ -86,6 +90,13 @@ import { PointsModule } from './points/points.module';
     GoogleAuthModule,
     // Points
     PointsModule,
+    // Health
+    HealthModule,
+    // Subscription Plan
+    SubscriptionPlanModule,
+    // Organization
+    OrganizationModule,
+    OrganizationMemberModule,
   ],
   controllers: [AppController],
   providers: [
