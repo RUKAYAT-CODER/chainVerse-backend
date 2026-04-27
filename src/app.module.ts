@@ -29,6 +29,7 @@ import { GamificationPointsModule } from './gamification-points/gamification-poi
 import { FaqManagementModule } from './faq-management/faq-management.module';
 import { GoogleAuthModule } from './google-auth/google-auth.module';
 import { PointsModule } from './points/points.module';
+import { ContactMessageModule } from './contact-message/contact-message.module';
 
 @Module({
   imports: [
@@ -86,6 +87,8 @@ import { PointsModule } from './points/points.module';
     GoogleAuthModule,
     // Points
     PointsModule,
+    // Contact Message
+    ContactMessageModule,
   ],
   controllers: [AppController],
   providers: [
