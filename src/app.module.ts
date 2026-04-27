@@ -33,6 +33,7 @@ import { HealthModule } from './health/health.module';
 import { SubscriptionPlanModule } from './subscription-plan/subscription-plan.module';
 import { OrganizationModule } from './organization/organization.module';
 import { OrganizationMemberModule } from './organization-member/organization-member.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -97,6 +98,8 @@ import { OrganizationMemberModule } from './organization-member/organization-mem
     // Organization
     OrganizationModule,
     OrganizationMemberModule,
+    // Notification
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

@@ -37,6 +37,9 @@ const REFRESH_TOKEN_EXPIRY = 604800;
 const BCRYPT_SALT_ROUNDS = 10;
 const VERIFICATION_TOKEN_EXPIRY = 86400; // 24 hours
 const RESET_TOKEN_EXPIRY = 900;          // 15 minutes
+const VERIFICATION_COOLDOWN = 60;       // 1 minute cooldown between attempts
+const VERIFICATION_ATTEMPT_WINDOW = 900; // 15 minutes window for attempt counting
+const MAX_VERIFICATION_ATTEMPTS = 5;     // Maximum 5 attempts per window
 
 @Injectable()
 export class StudentAuthService {
@@ -239,15 +242,6 @@ export class StudentAuthService {
     student.verificationAttempts += 1;
     student.lastVerificationAttempt = now;
     await student.save();
-
-    if (attemptsInWindow + 1 > MAX_VERIFICATION_ATTEMPTS) {
-      student.verificationToken = null;
-      student.verificationTokenExpiry = null;
-      await student.save();
-      throw new BadRequestException(
-        'Maximum verification attempts exceeded. Please request a new verification token.',
-      );
-    }
 
     student.emailVerified = true;
     student.verificationToken = null;
