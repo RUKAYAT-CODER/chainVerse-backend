@@ -1,8 +1,21 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test as NestTest, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
-import request from 'supertest';
-import { App } from 'supertest/types';
 import { AppModule } from '../src/app.module';
+import request from 'supertest';
+import { Server } from 'http';
+
+interface AuthResponse {
+  message: string;
+  user?: {
+    email: string;
+    emailVerified: boolean;
+    id?: string;
+  };
+  accessToken?: string;
+  refreshToken?: string;
+  verificationToken?: string;
+  resetToken?: string;
+}
 
 /**
  * End-to-end journey tests for the student authentication flow.
@@ -12,27 +25,25 @@ import { AppModule } from '../src/app.module';
  * mimicking a real user session progressing through the journey.
  */
 describe('Student Auth – Full Journey (e2e)', () => {
-  let app: INestApplication<App>;
-  let server: App;
+  let app: INestApplication;
+  let server: Server;
 
   // Tokens and one-time codes captured across the journey
-  let verificationToken: string;
   let accessToken: string;
   let refreshToken: string;
-  let resetToken: string;
 
   const BASE_EMAIL = 'journey.student@example.com';
   const BASE_PASSWORD = 'JourneyPass1!';
   const VERIFICATION_EMAIL = 'verify.student@example.com';
 
   beforeAll(async () => {
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const moduleFixture: TestingModule = await NestTest.createTestingModule({
       imports: [AppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
-    server = app.getHttpServer() as unknown as App;
+    server = app.getHttpServer() as Server;
   });
 
   afterAll(async () => {
@@ -60,16 +71,18 @@ describe('Student Auth – Full Journey (e2e)', () => {
           }
         });
 
-      expect(res.body.message).toMatch(/verify your email/i);
-      expect(res.body.user.email).toBe(BASE_EMAIL);
-      expect(res.body.user.emailVerified).toBe(false);
+      expect(res.body.message as string).toMatch(/verify your email/i);
+      expect((res.body.user as AuthResponse['user'])?.email).toBe(BASE_EMAIL);
+      expect((res.body.user as AuthResponse['user'])?.emailVerified).toBe(
+        false,
+      );
       expect(typeof res.body.accessToken).toBe('string');
       expect(typeof res.body.refreshToken).toBe('string');
       // Verification token is no longer returned in response for security
       expect(res.body.verificationToken).toBeUndefined();
 
-      accessToken = res.body.accessToken;
-      refreshToken = res.body.refreshToken;
+      accessToken = res.body.accessToken as string;
+      refreshToken = res.body.refreshToken as string;
     });
 
     it('rejects a duplicate email with 409', () =>

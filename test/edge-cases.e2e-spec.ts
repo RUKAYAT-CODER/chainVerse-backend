@@ -1,9 +1,10 @@
-import * as request from 'supertest';
+import request from 'supertest';
 import * as jwt from 'jsonwebtoken';
 import { createTestApp } from '../utils/test-app';
+import { INestApplication } from '@nestjs/common';
 
 describe('Authorization Edge Cases', () => {
-  let app;
+  let app: INestApplication;
 
   beforeAll(async () => {
     app = await createTestApp();
